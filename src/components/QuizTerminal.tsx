@@ -178,8 +178,7 @@ export default function QuizTerminal() {
   const sendChat = async () => {
     if (!chatInput.trim() || chatLoading) return;
     const userMsg: ChatMessage = { role: "user", content: chatInput };
-    const newMessages = [...chatMessages, userMsg];
-    setChatMessages(newMessages);
+    setChatMessages((prev) => [...prev, userMsg]);
     setChatInput("");
     setChatLoading(true);
 
@@ -187,16 +186,18 @@ export default function QuizTerminal() {
       const res = await fetch("/api/chat", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ messages: newMessages }),
+        body: JSON.stringify({ messages: [...chatMessages, userMsg] }),
       });
+      
       if (!res.ok) throw new Error("Chat failed.");
       const data = await res.json();
-      setChatMessages((prev) => {
-        const updated = [...prev];
-        updated[updated.length - 1] = { role: "assistant", content: data.text || "No response received." };
-        return updated;
-      });
-    } catch {
+      
+      setChatMessages((prev) => [
+        ...prev,
+        { role: "assistant", content: data.text || "I couldn't generate a response." }
+      ]);
+    } catch (err: any) {
+      console.error("Chat error:", err);
       setChatMessages((prev) => [
         ...prev,
         { role: "assistant", content: "Sorry, I couldn't connect right now. Check your API key." },
