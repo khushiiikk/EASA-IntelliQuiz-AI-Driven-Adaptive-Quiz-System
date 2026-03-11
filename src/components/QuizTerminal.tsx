@@ -453,7 +453,7 @@ export default function QuizTerminal() {
             <p className="font-bold mb-1">API Connection Error</p>
             <p className="text-xs opacity-80">{apiError}</p>
             {apiError.includes("API key") && (
-              <p className="text-xs mt-1 opacity-70">→ Open <code className="bg-black/30 px-1 rounded">.env.local</code> and add your <strong>GOOGLE_GENERATIVE_AI_API_KEY</strong>.</p>
+              <p className="text-xs mt-1 opacity-70">→ Open <code className="bg-black/30 px-1 rounded">.env.local</code> and add your <strong>GROQ_API_KEY</strong>.</p>
             )}
             <button onClick={() => { setApiError(null); generateQuestion(level, history); }} className="mt-2 px-3 py-1 bg-radar-red/20 hover:bg-radar-red/30 rounded text-xs font-bold">
               Retry

@@ -7,7 +7,9 @@ This platform is a Next.js (App Router) based adaptive learning system designed 
 
 ### Frontend (Client-Side)
 - **Framework:** Next.js 14 utilizing React Server Components and Client Components optimally.
-- **UI/UX Stack:** Tailwind CSS for a premium "Aviation/Tech" aesthetic. Framer Motion for cognitive-load-reducing micro-animations (e.g., fluid feedback rendering, level-up transitions).
+- **UI/UX Stack:** Tailwind CSS for a premium "Aviation/Tech" aesthetic. Optimized with a **Modern Horizontal Split-Layout** for intuitive navigation.
+- **Interactivity:** Framer Motion for cognitive-load-reducing micro-animations (e.g., fluid feedback rendering, level-up transitions).
+- **Iconic Branding:** Utilizes standardized Lucide icons (e.g., `Bot` for ARIA) for a clean, professional finish.
 - **State Architecture:** React state managing user session scope (Level 1-10 tracking, correctness streaks, and history arrays) completely securely without requiring a full database for the MVP.
 
 ### Backend & AI Engine (Server-Side)
