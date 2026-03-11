@@ -13,8 +13,8 @@ This platform is a Next.js (App Router) based adaptive learning system designed 
 ### Backend & AI Engine (Server-Side)
 - **Framework:** Next.js Route Handlers (`/api/quiz`).
 - **Data Flow:** The client requests a new question by submitting the user's `currentLevel` (1-10) and `history_context` (last 3 questions answered).
-- **Security:** The LLM API key (`GOOGLE_GENERATIVE_AI_API_KEY`) is kept entirely server-side, a standard requirement for production ML application security.
-- **Prompt Engineering:** utilizes the Vercel AI SDK (`generateObject` with strictly typed Zod schemas) to force the LLM into returning a perfectly validated JSON structure containing the `question`, `options`, `correctAnswer`, `explanation`, and `topic`.
+- **Security:** The LLM API key (`GROQ_API_KEY`) is kept entirely server-side, a standard requirement for production ML application security.
+- **Prompt Engineering:** utilizes the Vercel AI SDK to force the LLM into returning a perfectly validated JSON structure containing the `question`, `options`, `correctAnswer`, `explanation`, and `topic`.
 
 ## Key Features
 
@@ -36,11 +36,12 @@ This platform is a Next.js (App Router) based adaptive learning system designed 
 
 ## AI & ML Evaluation Rationale
 
-### Model Selection (Google Gemini 1.5 Flash)
-Based on Chatbot Arena leaderboards and LLM API cost comparisons, **Gemini 1.5 Flash** was chosen for this architecture. 
-* **Speed:** Educational loops require immediate feedback. Flash generates complex JSON schemas in <2 seconds.
-* **Reasoning:** It ranks highly on logic/reasoning benchmarks (crucial for Aviation Navigation/Meteorology rule applications).
-* **Cost Factor:** Generating adaptive questions per-user session can scale costs aggressively. Gemini offers a highly generous free tier and extremely low per-1M tokens cost, making it the ideal choice for scalable consumer-facing education tools.
+### Model Selection (Groq Llama 3.1 8B Instant)
+Based on real-time generation requirements and the need for strict JSON structured outputs, **Groq's Llama 3.1 8B** model was chosen for this architecture.
+
+*   **Speed:** Educational loops require immediate feedback. Groq generates complex JSON schemas almost instantaneously.
+*   **Reasoning:** Capable of handling aviation navigation/meteorology rule applications effectively.
+*   **Cost Factor:** Generating adaptive questions per-user session can scale costs aggressively. Groq's open-source model hosting offers an incredibly fast and cost-effective solution for scalable consumer-facing education tools.
 
 ### Adaptive Scaling Logic & Hallucination Mitigation
 The difficulty scales dynamically not via pre-written databases, but via prompt reinforcement:
@@ -53,19 +54,20 @@ The difficulty scales dynamically not via pre-written databases, but via prompt 
 ## How to Run Locally
 
 ### Requirements
-- Node.js > 18.0
-- Google Gemini API Key (Available free via [Google AI Studio](https://aistudio.google.com/))
+1. Node.js > 18.0
+2. Groq API Key (Available free via [Groq Console](https://console.groq.com/))
 
 ### Setup Instructions
-1. Clone or download this repository.
-2. Open the terminal and run:
-   ```bash
-   npm install
-   ```
-3. Open the `.env.local` file and paste your Gemini API key:
-   ```env
-   GOOGLE_GENERATIVE_AI_API_KEY="your-key-here"
-   ```
+
+1.  Clone or download this repository.
+2.  Open the terminal and run:
+    ```bash
+    npm install
+    ```
+3.  Open the `.env.local` file and paste your Groq API key:
+    ```bash
+    GROQ_API_KEY="your-key-here"
+    ```
 4. Start the development server:
    ```bash
    npm run dev

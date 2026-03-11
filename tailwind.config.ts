@@ -10,11 +10,11 @@ const config: Config = {
     extend: {
       colors: {
         aviation: {
-          900: '#0B1021', // Deep techy purple/blue background
-          800: '#141830', // Panel background
-          700: '#1F254B', // Elevated panel
-          600: '#3A447E', // Border highlights
-          400: '#697AE0', // Active elements
+          900: '#040b16', // Deepest navy (background)
+          800: '#0a192f', // Dark navy (panels)
+          700: '#112240', // Lighter navy (elevated)
+          600: '#233554', // Slate navy (borders)
+          400: '#64ffda', // Cyan/teal (active text/accents)
         },
         radar: {
           green: '#4AF2A1', // Success / radar sweeps

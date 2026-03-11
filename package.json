@@ -9,8 +9,9 @@
     "lint": "next lint"
   },
   "dependencies": {
-    "@ai-sdk/google": "^0.0.18",
-    "ai": "^3.4.33",
+    "@ai-sdk/google": "^3.0.43",
+    "@ai-sdk/groq": "^3.0.29",
+    "ai": "^6.0.116",
     "autoprefixer": "^10.0.1",
     "clsx": "^2.1.0",
     "framer-motion": "^11.0.24",

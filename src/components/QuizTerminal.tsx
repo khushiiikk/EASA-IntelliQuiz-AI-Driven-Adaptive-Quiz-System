@@ -1,9 +1,10 @@
 "use client";
 
 import { useState, useEffect, useRef } from "react";
+import Image from "next/image";
 import { motion, AnimatePresence } from "framer-motion";
 import {
-  Plane, AlertTriangle, CheckCircle2, XCircle, Activity,
+  Plane, AlertTriangle, CheckCircle2, XCircle, Activity, Bot,
   Wind, Navigation2, Zap, MessageSquare, Send, X, Brain, Shield, BarChart2,
 } from "lucide-react";
 
@@ -137,7 +138,7 @@ export default function QuizTerminal() {
     let newStreak = streak;
 
     if (isCorrect) {
-      setScore((s) => s + level * 10);
+      setScore(score + level * 10);
       newStreak = streak > 0 ? streak + 1 : 1;
       if (newStreak >= 2 && level < 10) { newLevel = level + 1; newStreak = 0; }
     } else {
@@ -189,31 +190,12 @@ export default function QuizTerminal() {
         body: JSON.stringify({ messages: newMessages }),
       });
       if (!res.ok) throw new Error("Chat failed.");
-      const reader = res.body?.getReader();
-      const decoder = new TextDecoder();
-      let assistantContent = "";
-      setChatMessages((prev) => [...prev, { role: "assistant", content: "" }]);
-
-      if (reader) {
-        while (true) {
-          const { done, value } = await reader.read();
-          if (done) break;
-          const chunk = decoder.decode(value, { stream: true });
-          // Parse AI SDK data stream format
-          const lines = chunk.split("\n").filter((l) => l.startsWith("0:"));
-          for (const line of lines) {
-            try {
-              const text = JSON.parse(line.slice(2));
-              assistantContent += text;
-              setChatMessages((prev) => {
-                const updated = [...prev];
-                updated[updated.length - 1] = { role: "assistant", content: assistantContent };
-                return updated;
-              });
-            } catch { /* skip parse errors */ }
-          }
-        }
-      }
+      const data = await res.json();
+      setChatMessages((prev) => {
+        const updated = [...prev];
+        updated[updated.length - 1] = { role: "assistant", content: data.text || "No response received." };
+        return updated;
+      });
     } catch {
       setChatMessages((prev) => [
         ...prev,
@@ -230,85 +212,140 @@ export default function QuizTerminal() {
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
-        className="w-full max-w-2xl mx-auto"
+        className="w-full max-w-6xl mx-auto md:px-4"
       >
-        <div className="rounded-2xl border border-aviation-600/50 bg-aviation-800/80 backdrop-blur-xl shadow-2xl shadow-aviation-400/10 overflow-hidden">
-          {/* Top accent bar */}
-          <div className="h-1 w-full bg-gradient-to-r from-aviation-400 via-fuchsia-500 to-aviation-400" />
+        <div className="rounded-[2rem] border border-aviation-600/30 bg-aviation-800/60 backdrop-blur-2xl shadow-[0_0_50px_rgba(4,11,22,0.8)] overflow-hidden flex flex-col relative p-6 md:p-12 min-h-[600px]">
+          
+          {/* Header */}
+          <div className="flex flex-col md:flex-row items-center justify-between w-full mb-12 relative gap-6 md:gap-0 z-20">
+            {/* Logo in left most corner */}
+            <div className="flex items-center gap-3 w-full md:w-auto">
+              <div className="p-3 bg-aviation-700/50 rounded-xl border border-aviation-600/50 shadow-lg">
+                <Plane size={24} className="text-aviation-400" />
+              </div>
+              <span className="text-white font-bold text-xl tracking-tight leading-none">EASA<br/><span className="text-aviation-400 text-xs tracking-widest uppercase">Engine</span></span>
+            </div>
+            
+            {/* Title in central */}
+            <div className="md:absolute md:left-1/2 md:-translate-x-1/2 flex items-center justify-center">
+              <h1 className="text-center text-lg md:text-xl font-black text-white tracking-widest uppercase opacity-90">
+                Adaptive Intelligence
+              </h1>
+            </div>
+            
+            {/* Profile Button - right corner */}
+            <div className="w-full md:w-auto flex justify-end">
+              {pastSessions.length > 0 ? (
+                <button
+                  className="text-xs font-mono text-slate-300 hover:text-white hover:bg-aviation-600/50 transition-colors border border-aviation-600/50 px-5 py-2.5 rounded-full flex items-center gap-2 bg-aviation-900/50"
+                  onClick={() => setShowProfile(true)}
+                >
+                  <BarChart2 size={14} className="text-aviation-400" /> {pastSessions.length} Session{pastSessions.length > 1 ? "s" : ""}
+                </button>
+              ) : <div className="hidden md:block w-[120px]" />}
+            </div>
+          </div>
 
-          <div className="p-10">
-            {/* Icon */}
-            <div className="flex justify-center mb-8">
-              <div className="p-5 bg-aviation-700/50 rounded-2xl border border-aviation-600/50 shadow-[0_0_40px_rgba(105,122,224,0.3)]">
-                <Plane size={44} className="text-aviation-400" />
+          {/* Body Content - Horizontal Layout */}
+          <div className="flex flex-col lg:flex-row items-center justify-between gap-12 flex-1 relative z-10 w-full mb-16">
+            
+            {/* Left Column - Text and CTA */}
+            <div className="w-full lg:w-[45%] flex flex-col justify-center">
+              <div className="inline-flex items-center gap-2 px-3 py-1.5 bg-white/5 border border-white/10 rounded-full text-[10px] md:text-xs text-slate-300 font-medium w-max mb-8 uppercase tracking-widest shadow-inner">
+                <span className="text-aviation-400 shrink-0 font-bold">IN</span> Made for Aviators
+              </div>
+              
+              <h2 className="text-4xl md:text-5xl lg:text-6xl font-black text-white mb-6 tracking-tight leading-[1.1]">
+                Guiding <span className="text-transparent bg-clip-text bg-gradient-to-r from-aviation-400 to-white">Future</span> <br/> Professionals
+              </h2>
+              
+              <p className="text-slate-400 mb-10 text-base md:text-lg leading-relaxed max-w-lg">
+                Evaluate decision-making ability, master EASA protocols, and plan your aviation future through dynamic difficulty adaptation.
+              </p>
+
+              <div className="flex flex-wrap items-center gap-8">
+                <button
+                  onClick={startGame}
+                  className="group relative px-8 py-4 bg-[#0a192f] border border-aviation-400/50 hover:bg-aviation-400 hover:text-[#040b16] hover:border-aviation-400 transition-all rounded-full font-bold text-white text-[15px] flex items-center gap-3 shadow-[0_0_20px_rgba(100,255,218,0.15)]"
+                >
+                  Start Journey <span className="group-hover:translate-x-1 transition-transform">→</span>
+                </button>
+                
+                <button className="text-sm font-semibold text-slate-300 hover:text-aviation-400 flex items-center gap-2 transition-colors">
+                  Explore Benefits <span>→</span>
+                </button>
               </div>
             </div>
 
-            {/* Title */}
-            <h1 className="text-center text-3xl md:text-4xl font-black bg-gradient-to-r from-aviation-400 via-fuchsia-300 to-aviation-400 text-transparent bg-clip-text mb-3 tracking-tight">
-              EASA Adaptive Intelligence Engine
-            </h1>
-            <p className="text-center text-slate-400 mb-8 text-sm leading-relaxed max-w-sm mx-auto">
-              AI-powered aviation assessment designed to evaluate real decision-making ability through dynamic difficulty adaptation and cognitive performance analysis.
-            </p>
-
-            {/* Feature cards */}
-            <div className="grid grid-cols-2 gap-3 mb-8">
-              {[
-                { icon: <Brain size={16} />, label: "How It Works", items: ["Questions evolve based on your answers", "AI evaluates reasoning instantly", "Final proficiency level calculated"] },
-                { icon: <Navigation2 size={16} />, label: "Assessment Scope", items: ["Navigation", "Meteorology", "EASA Dispatcher Logic"] },
-              ].map((card, i) => (
-                <div key={i} className="bg-aviation-900/50 border border-aviation-700/50 rounded-xl p-4">
-                  <div className="flex items-center gap-2 text-aviation-400 font-semibold text-xs uppercase tracking-widest mb-3">
-                    {card.icon} {card.label}
-                  </div>
-                  <ul className="space-y-1.5">
-                    {card.items.map((item, j) => (
-                      <li key={j} className="text-slate-300 text-xs flex items-start gap-1.5">
-                        <span className="text-fuchsia-400 mt-0.5 shrink-0">▸</span> {item}
-                      </li>
-                    ))}
-                  </ul>
+            {/* Right Column - Circular Illustration */}
+            <div className="w-full lg:w-[50%] relative flex items-center justify-center min-h-[400px]">
+              
+              {/* Giant Background Circle (simulating FinPath aesthetic but themed for deep navy/cyan) */}
+              <div className="absolute w-[350px] h-[350px] md:w-[450px] md:h-[450px] bg-gradient-to-br from-white to-slate-200 rounded-full flex items-center justify-center shadow-[0_0_50px_rgba(0,0,0,0.5)] overflow-hidden lg:right-[-10%] top-1/2 -translate-y-1/2">
+                
+                <div className="absolute w-full h-full bg-[radial-gradient(circle_at_center,rgba(100,255,218,0.1)_0,transparent_70%)]" />
+                
+                <Plane size={180} className="text-[#0a192f]/5 absolute -rotate-12" />
+                
+                {/* Embedded decorative boxes acting like the UI inside FinPath graphic */}
+                <div className="absolute bottom-16 left-12 w-28 h-20 bg-white shadow-lg border border-slate-200 rounded-xl flex items-center justify-center">
+                  <BarChart2 size={32} className="text-[#0a192f]" />
                 </div>
-              ))}
+                <div className="absolute top-20 right-16 w-20 h-20 bg-white shadow-xl border border-slate-200 rounded-full flex items-center justify-center">
+                  <Shield size={32} className="text-[#0a192f]" />
+                </div>
+                
+                {/* Central main hero object */}
+                <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-48 h-48 bg-gradient-to-br from-[#0a192f] to-[#040b16] rounded-full flex items-center justify-center shadow-2xl border-4 border-white">
+                   <Brain size={64} className="text-aviation-400" />
+                </div>
+              </div>
+
+              {/* Floating interactive tags overlapping the big circle */}
+              <motion.div 
+                animate={{ y: [0, -10, 0] }} transition={{ duration: 4, repeat: Infinity, ease: "easeInOut" }}
+                className="absolute top-[10%] left-[5%] bg-white border border-slate-200 px-5 py-4 rounded-2xl shadow-2xl z-20 flex gap-4 text-[#0a192f] items-center"
+              >
+                <div className="p-2 bg-aviation-400/20 rounded-lg"><Activity size={20} className="text-aviation-400" /></div>
+                <div>
+                  <div className="text-[10px] text-slate-500 font-bold uppercase tracking-widest">Dynamic</div>
+                  <div className="text-sm font-black">Level Scaling</div>
+                </div>
+              </motion.div>
+
+              <motion.div 
+                animate={{ y: [0, 8, 0] }} transition={{ duration: 5, repeat: Infinity, ease: "easeInOut", delay: 1 }}
+                className="absolute bottom-[5%] right-[-5%] bg-white border border-slate-200 px-5 py-4 rounded-2xl shadow-2xl z-20 flex gap-4 text-[#0a192f] items-center"
+              >
+                <div className="p-2 bg-radar-green/20 rounded-lg"><CheckCircle2 size={20} className="text-radar-green" /></div>
+                <div>
+                  <div className="text-[10px] text-slate-500 font-bold uppercase tracking-widest">Compliance</div>
+                  <div className="text-sm font-black">EASA Logic</div>
+                </div>
+              </motion.div>
+
             </div>
-
-            {/* AI Systems Active */}
-            <div className="flex flex-wrap gap-2 justify-center mb-8">
-              {["Adaptive Questioning", "Instant Feedback", "Performance Modeling", "Level Classification"].map((tag) => (
-                <span key={tag} className="px-3 py-1 bg-aviation-700/40 border border-aviation-600/40 rounded-full text-xs text-aviation-400 font-mono">
-                  ⚙ {tag}
-                </span>
-              ))}
-            </div>
-
-            {/* CTA */}
-            <button
-              onClick={startGame}
-              className="w-full group relative py-4 bg-gradient-to-r from-aviation-600 to-fuchsia-600 hover:from-aviation-500 hover:to-fuchsia-500 transition-all rounded-xl font-bold text-white text-lg shadow-[0_0_30px_rgba(105,122,224,0.3)] hover:shadow-[0_0_50px_rgba(105,122,224,0.5)] overflow-hidden"
-            >
-              <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent -translate-x-full group-hover:translate-x-full duration-700 transition-transform" />
-              <span className="flex items-center justify-center gap-2">
-                Start Adaptive Evaluation <Zap size={20} />
-              </span>
-            </button>
-
-            {/* Professional footer */}
-            <p className="text-center text-xs text-slate-600 mt-6 font-mono">
-              Designed to simulate real-world dispatcher evaluation environments.
-            </p>
           </div>
 
-          {/* Past sessions quick stat */}
-          {pastSessions.length > 0 && (
-            <div
-              className="border-t border-aviation-700/50 px-6 py-3 flex justify-between items-center text-xs font-mono text-slate-500 cursor-pointer hover:bg-aviation-700/20 transition-colors"
-              onClick={() => setShowProfile(true)}
-            >
-              <span>📁 {pastSessions.length} evaluation session(s) on record</span>
-              <span className="text-aviation-400">View Profile →</span>
-            </div>
-          )}
+          {/* Bottom simple feature cards (FinPath footer style) */}
+          <div className="w-full grid grid-cols-1 md:grid-cols-3 gap-6 relative z-20">
+             {[
+               { icon: <Activity size={24} />, title: "Track Proficiency", desc: "Monitor your levels across Navigation and Meteorology." },
+               { icon: <Shield size={24} />, title: "Secure Evaluation", desc: "EASA-compliant questions generated instantly safely." },
+               { icon: <Brain size={24} />, title: "Cognitive AI", desc: "AI adapts to your reasoning capability in real-time." },
+             ].map((feat, i) => (
+               <div key={i} className="bg-aviation-900/60 border border-aviation-700/50 backdrop-blur-md rounded-2xl p-6 flex flex-col gap-4 hover:border-aviation-400/50 transition-colors shadow-lg">
+                 <div className="w-12 h-12 rounded-full bg-aviation-800 border border-aviation-600/50 flex items-center justify-center text-aviation-400 shadow-inner">
+                   {feat.icon}
+                 </div>
+                 <div>
+                   <div className="text-white font-bold text-base mb-1">{feat.title}</div>
+                   <div className="text-xs text-slate-400">{feat.desc}</div>
+                 </div>
+               </div>
+             ))}
+          </div>
+
         </div>
 
         {/* Profile Modal */}
@@ -398,12 +435,14 @@ export default function QuizTerminal() {
         </div>
         <div className="flex-1 max-w-[180px] h-1.5 bg-aviation-900 rounded-full mx-6 overflow-hidden border border-aviation-700">
           <motion.div
-            className="h-full bg-gradient-to-r from-aviation-500 to-fuchsia-400"
+            className="h-full bg-gradient-to-r from-aviation-600 to-aviation-400"
             animate={{ width: `${(level / 10) * 100}%` }}
             transition={{ duration: 0.5 }}
           />
         </div>
-        <span className="text-fuchsia-400 text-xs font-bold uppercase tracking-widest">Score: {score}</span>
+        <div className="flex items-center gap-2 text-aviation-400 text-xs font-bold uppercase tracking-widest">
+          <Bot size={16} /> {score}
+        </div>
       </div>
 
       {/* Error State */}
@@ -427,8 +466,8 @@ export default function QuizTerminal() {
       {loading && (
         <div className="h-[380px] flex flex-col items-center justify-center space-y-4">
           <div className="relative w-14 h-14">
-            <div className="absolute inset-0 rounded-full border-t-2 border-aviation-400 animate-spin" />
-            <div className="absolute inset-2 rounded-full border-r-2 border-fuchsia-400 animate-spin" style={{ animationDirection: "reverse", animationDuration: "1.5s" }} />
+            <div className="absolute inset-0 rounded-full border-t-2 border-aviation-600 animate-spin" />
+            <div className="absolute inset-2 rounded-full border-r-2 border-aviation-400 animate-spin" style={{ animationDirection: "reverse", animationDuration: "1.5s" }} />
             <Plane className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-slate-400" size={18} />
           </div>
           <p className="text-aviation-400 font-mono text-xs tracking-widest animate-pulse">
@@ -450,7 +489,7 @@ export default function QuizTerminal() {
             <div className="flex items-center gap-2 text-xs font-bold text-slate-400 bg-aviation-900/60 py-1.5 px-3 rounded-full border border-aviation-700">
               {questionData.topic === "Navigation"
                 ? <Navigation2 size={12} className="text-aviation-400" />
-                : <Wind size={12} className="text-fuchsia-400" />}
+                : <Wind size={12} className="text-aviation-400" />}
               {questionData.topic.toUpperCase()}
             </div>
             <span className="text-xs font-mono text-slate-500">{history.length + 1} / 10</span>
@@ -461,7 +500,7 @@ export default function QuizTerminal() {
           </h2>
 
           {/* Options */}
-          <div className="grid gap-3 mb-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-3 mb-6">
             {questionData.options.map((opt, i) => {
               const isSelected   = selectedAnswer === opt;
               const isCorrectOpt = opt === questionData.correctAnswer;
@@ -531,10 +570,14 @@ export default function QuizTerminal() {
             >
               {/* Chat header */}
               <div className="flex items-center justify-between p-4 bg-aviation-900/60 border-b border-aviation-700">
-                <div className="flex items-center gap-2">
-                  <div className="w-2 h-2 bg-radar-green rounded-full animate-pulse" />
-                  <span className="font-bold text-sm text-aviation-400">ARIA</span>
-                  <span className="text-xs text-slate-500">Dispatch Mentor</span>
+                <div className="flex items-center gap-3">
+                  <div className="relative w-8 h-8 rounded-full overflow-hidden border border-aviation-500 bg-aviation-800 flex items-center justify-center shrink-0">
+                    <Bot size={18} className="text-aviation-400" />
+                  </div>
+                  <div>
+                    <span className="font-bold text-sm text-aviation-400 block leading-tight">ARIA</span>
+                    <span className="text-[10px] text-slate-500 uppercase tracking-widest">Dispatch Mentor</span>
+                  </div>
                 </div>
                 <button onClick={() => setShowChat(false)} className="text-slate-500 hover:text-white"><X size={16} /></button>
               </div>
@@ -581,10 +624,10 @@ export default function QuizTerminal() {
 
         <button
           onClick={() => setShowChat((v) => !v)}
-          className="p-4 bg-gradient-to-br from-aviation-600 to-fuchsia-600 hover:from-aviation-500 hover:to-fuchsia-500 transition-all rounded-2xl shadow-2xl shadow-aviation-400/30 text-white"
+          className="w-14 h-14 bg-gradient-to-br from-aviation-600 to-aviation-500 hover:from-aviation-500 hover:to-aviation-400 transition-all rounded-2xl shadow-2xl shadow-aviation-400/30 text-white flex items-center justify-center overflow-hidden border border-aviation-400/30"
           title="Ask ARIA — EASA Mentor"
         >
-          <MessageSquare size={22} />
+          <Bot size={28} className="text-white" />
         </button>
       </div>
     </div>

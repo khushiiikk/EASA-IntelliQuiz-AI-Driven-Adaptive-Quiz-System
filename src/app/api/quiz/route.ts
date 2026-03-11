@@ -1,7 +1,9 @@
-import { google } from "@ai-sdk/google";
-import { generateObject } from "ai";
+import { createGroq } from "@ai-sdk/groq";
+import { generateText } from "ai";
 import { z } from "zod";
 import { NextResponse } from "next/server";
+
+const groq = createGroq({ apiKey: process.env.GROQ_API_KEY });
 
 // System prompt: Strict EASA question generator with validated JSON output
 const systemPrompt = `You are an expert EASA Flight Dispatcher instructor generating multiple-choice exam questions.
@@ -23,10 +25,9 @@ const questionSchema = z.object({
 });
 
 export async function POST(req: Request) {
-  // Validate that the API key is configured before calling
-  if (!process.env.GOOGLE_GENERATIVE_AI_API_KEY) {
+  if (!process.env.GROQ_API_KEY) {
     return NextResponse.json(
-      { error: "API key missing. Add GOOGLE_GENERATIVE_AI_API_KEY to .env.local" },
+      { error: "API key missing. Add GROQ_API_KEY to .env.local" },
       { status: 500 }
     );
   }
@@ -38,16 +39,39 @@ export async function POST(req: Request) {
       ? `Avoid repeating these recent topics: ${JSON.stringify(history.slice(-3).map((h: any) => h.q))}`
       : "No prior history.";
 
-    const result = await generateObject({
-      model: google("gemini-1.5-flash-latest"),
+    const result = await generateText({
+      model: groq("llama-3.1-8b-instant"),
       system: systemPrompt,
       prompt: `Generate ONE question at Level ${level}/10.
 Topic focus: ${topic}.
-${recentContext}`,
-      schema: questionSchema,
+${recentContext}
+
+OUTPUT FORMAT INSTRUCTIONS:
+You must respond with ONLY a valid, minified JSON object matching this exact schema:
+{
+  "question": "string",
+  "options": ["string", "string", "string", "string"],
+  "correctAnswer": "string",
+  "explanation": "string",
+  "topic": "Navigation" | "Meteorology"
+}
+Do not include markdown tags (\`\`\`json) or any outside text.`,
     });
 
-    return NextResponse.json(result.object);
+    // Extract JSON if the model wraps it in markdown by mistake
+    let rawText = result.text.trim();
+    if (rawText.startsWith("```json")) rawText = rawText.replace(/```json/g, "").replace(/```/g, "").trim();
+    if (rawText.startsWith("```")) rawText = rawText.replace(/```/g, "").trim();
+
+    try {
+      const parsed = JSON.parse(rawText);
+      const validated = questionSchema.parse(parsed);
+      return NextResponse.json(validated);
+    } catch (parseError) {
+      console.error("JSON Parse Error on:", rawText);
+      throw new Error("Failed to parse AI JSON output");
+    }
+
   } catch (error: any) {
     console.error("[Quiz API Error]:", error?.message || error);
     return NextResponse.json(
