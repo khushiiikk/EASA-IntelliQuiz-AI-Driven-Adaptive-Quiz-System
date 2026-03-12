@@ -19,8 +19,68 @@ body {
   min-height: 100vh;
 }
 
+@keyframes grid-drift {
+  0%, 100% { background-position: 0 0, 0 0; }
+  50% { background-position: 60px 0, 0 60px; }
+}
+
+@keyframes float-1 {
+  0%, 100% { transform: translate(0, 0) scale(1); opacity: 0.6; }
+  33% { transform: translate(12px, -20px) scale(1.05); opacity: 0.8; }
+  66% { transform: translate(-8px, -10px) scale(0.95); opacity: 0.5; }
+}
+
+@keyframes float-2 {
+  0%, 100% { transform: translate(0, 0); opacity: 0.5; }
+  50% { transform: translate(-15px, 15px); opacity: 0.75; }
+}
+
+@keyframes radar-sweep {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+@keyframes pulse-glow {
+  0%, 100% { opacity: 0.4; transform: scale(1); }
+  50% { opacity: 0.7; transform: scale(1.05); }
+}
+
+@keyframes scanline {
+  0% { transform: translateY(-100%); }
+  100% { transform: translateY(100vh); }
+}
+
+@keyframes dot-float {
+  0%, 100% { transform: translate(0, 0); opacity: 0.4; }
+  25% { transform: translate(10px, -15px); opacity: 0.7; }
+  50% { transform: translate(-5px, -25px); opacity: 0.5; }
+  75% { transform: translate(-12px, -8px); opacity: 0.6; }
+}
+
 @layer utilities {
   .text-balance {
     text-wrap: balance;
+  }
+  
+  .animate-grid-drift {
+    animation: grid-drift 20s ease-in-out infinite;
+  }
+  .animate-float-1 {
+    animation: float-1 8s ease-in-out infinite;
+  }
+  .animate-float-2 {
+    animation: float-2 10s ease-in-out infinite;
+  }
+  .animate-radar-sweep {
+    animation: radar-sweep 15s linear infinite;
+  }
+  .animate-pulse-glow {
+    animation: pulse-glow 4s ease-in-out infinite;
+  }
+  .animate-scanline {
+    animation: scanline 8s linear infinite;
+  }
+  .animate-dot-float {
+    animation: dot-float 6s ease-in-out infinite;
   }
 }

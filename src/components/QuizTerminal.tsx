@@ -54,6 +54,7 @@ export default function QuizTerminal() {
   const [chatInput, setChatInput]     = useState("");
   const [chatLoading, setChatLoading] = useState(false);
   const chatEndRef = useRef<HTMLDivElement>(null);
+  const [autoAdvanceVisible, setAutoAdvanceVisible] = useState(false);
 
   // Load past sessions from localStorage on mount
   useEffect(() => {
@@ -152,6 +153,18 @@ export default function QuizTerminal() {
     fetchQuestion(newLevel, newHistory).then(setNextQuestion).catch(() => {});
   };
 
+  // After feedback shows, wait 3s then ask about moving on
+  useEffect(() => {
+    if (!feedbackMode) {
+      setAutoAdvanceVisible(false);
+      return;
+    }
+    const t = setTimeout(() => {
+      setAutoAdvanceVisible(true);
+    }, 3000);
+    return () => clearTimeout(t);
+  }, [feedbackMode, questionData?.question]);
+
   const handleNext = () => {
     if (history.length >= 10) {
       finishGame();
@@ -229,8 +242,8 @@ export default function QuizTerminal() {
             
             {/* Title in central */}
             <div className="md:absolute md:left-1/2 md:-translate-x-1/2 flex items-center justify-center">
-              <h1 className="text-center text-lg md:text-xl font-black text-white tracking-widest uppercase opacity-90">
-                Adaptive Intelligence
+              <h1 className="text-center text-base md:text-lg font-black text-white tracking-widest uppercase opacity-90">
+                Adaptive Intelligence Quiz System
               </h1>
             </div>
             
@@ -252,16 +265,19 @@ export default function QuizTerminal() {
             
             {/* Left Column - Text and CTA */}
             <div className="w-full lg:w-[45%] flex flex-col justify-center">
-              <div className="inline-flex items-center gap-2 px-3 py-1.5 bg-white/5 border border-white/10 rounded-full text-[10px] md:text-xs text-slate-300 font-medium w-max mb-8 uppercase tracking-widest shadow-inner">
-                <span className="text-aviation-400 shrink-0 font-bold">IN</span> Made for Aviators
+              <div className="inline-flex items-center gap-2 px-3 py-1.5 bg-white/5 border border-white/10 rounded-full text-[10px] md:text-xs text-slate-300 font-medium w-max mb-6 uppercase tracking-widest shadow-inner">
+                <span className="text-aviation-400 shrink-0 font-bold">EASA</span> Flight Dispatcher
               </div>
               
-              <h2 className="text-4xl md:text-5xl lg:text-6xl font-black text-white mb-6 tracking-tight leading-[1.1]">
-                Guiding <span className="text-transparent bg-clip-text bg-gradient-to-r from-aviation-400 to-white">Future</span> <br/> Professionals
+              <h2 className="text-3xl md:text-4xl lg:text-5xl font-black text-white mb-3 tracking-tight leading-[1.15]">
+                Adaptive Intelligence <span className="text-transparent bg-clip-text bg-gradient-to-r from-aviation-400 to-white">Quiz System</span>
               </h2>
+              <p className="text-slate-400 text-sm md:text-base mb-6">
+                AI-driven evaluation for Navigation & Meteorology
+              </p>
               
               <p className="text-slate-400 mb-10 text-base md:text-lg leading-relaxed max-w-lg">
-                Evaluate decision-making ability, master EASA protocols, and plan your aviation future through dynamic difficulty adaptation.
+                Evaluate decision-making ability, master EASA protocols, and scale through 10 adaptive levels with instant feedback and explanations.
               </p>
 
               <div className="flex flex-wrap items-center gap-8">
@@ -544,10 +560,31 @@ export default function QuizTerminal() {
                     <p className="text-slate-300 text-sm leading-relaxed">{questionData.explanation}</p>
                   </div>
                 </div>
-                <div className="flex justify-end">
-                  <button onClick={handleNext} className="px-6 py-2.5 bg-aviation-500 hover:bg-aviation-400 transition-colors rounded-lg font-bold text-white text-sm shadow-lg">
-                    Continue Sequence →
-                  </button>
+                <div className="flex flex-col md:flex-row items-center justify-between gap-3">
+                  {autoAdvanceVisible && (
+                    <div className="flex items-center gap-2 text-[11px] text-slate-300">
+                      <span>Move to the next question?</span>
+                      <button
+                        type="button"
+                        onClick={() => { setAutoAdvanceVisible(false); handleNext(); }}
+                        className="px-3 py-1 rounded-full bg-aviation-500 hover:bg-aviation-400 text-white font-semibold text-[11px]"
+                      >
+                        Yes
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => setAutoAdvanceVisible(false)}
+                        className="px-3 py-1 rounded-full border border-aviation-600 text-slate-200 text-[11px]"
+                      >
+                        Not yet
+                      </button>
+                    </div>
+                  )}
+                  <div className="flex justify-end w-full md:w-auto">
+                    <button onClick={handleNext} className="px-6 py-2.5 bg-aviation-500 hover:bg-aviation-400 transition-colors rounded-lg font-bold text-white text-sm shadow-lg">
+                      Continue Sequence →
+                    </button>
+                  </div>
                 </div>
               </motion.div>
             )}
